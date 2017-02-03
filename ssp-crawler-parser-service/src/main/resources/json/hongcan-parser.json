@@ -1,0 +1,90 @@
+{
+  "comment" : "红餐网详细页解析任务",
+  "domainTag" : "hongcan-parser",
+  "crawlerBaseInfo" :
+  {
+    "baseUrls" : [
+    ],
+    "threadCount" : 2,
+    "refreshRedisWhenStart" : false,
+    "exitWhenComplete" : false
+  },
+
+  "crawlerTrigger" :
+  [
+    {
+      "type" : "simple_once",
+      "value" : true
+    }
+  ],
+
+  "site" :
+  {
+    "charset" : "UTF-8",
+    "timeOut" : 30000
+  },
+
+  "scheduler" : {
+    "hasDetailPage" : false
+  },
+
+  "pipelines" : [
+    "loggerPipeline"
+  ],
+
+  "downloaders" : [
+    {
+      "urlPattern" : ".*",
+      "downloader": "s3Downloader"
+    }
+  ],
+
+  "pageProcessor" : {
+    "preSubProcessor" : ["imgSubstitute", "linkRemove", "iframeSubstitute"],
+    "afterSubProcessor" : ["detailParser"],
+    "pageParserConfigs" : [
+      {
+        "targetUrlPattern" : ".*",
+        "pageType" : "html",
+        "fieldFromRequest" : [
+          "originUrl","crawlTime","thumbnail", "readCount"
+        ],
+        "fieldParserConfigs" : [
+          {
+            "fieldName" : "title",
+            "xpathSelector" : "//div[@class='details-title']/h1/text()"
+          },
+          {
+            "fieldName": "originalTime",
+            "xpathSelector": "//div[@class='details-title']/h4/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data};var regResult = /(\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2})/.exec(data); if (regResult == null ) {return null}; return regResult[1].trim();}",
+            "converter" : "dateConverter",
+            "converterParam" : "yyyy-MM-dd HH:mm"
+          },
+          {
+            "fieldName" : "source",
+            "xpathSelector" : "//div[@class='details-title']/h4/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data};var regResult = /来源：\\s*(\\S+)/.exec(data); if (regResult == null) {return null}; return regResult[1].trim()}"
+          },
+          {
+            "fieldName" : "author",
+            "xpathSelector" : "//div[@class='details-title']/h4/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data};var regResult = /作者：\\s*(\\S+)/.exec(data); if (regResult == null) {return null}; return regResult[1].trim()}"
+          },
+          {
+            "fieldName" : "content",
+            "cssSelector" : ".details-content",
+            "cssSelectorAttrName" : "innerhtml",
+            "converter" : "contentConverter",
+            "converterParam" : {
+              "contentFilterPattern" : "(.*?转载请注明.*?)"
+            }
+          }
+        ]
+      }
+    ]
+
+
+  }
+
+}

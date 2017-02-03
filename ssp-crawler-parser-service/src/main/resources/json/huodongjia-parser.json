@@ -1,0 +1,109 @@
+{
+  "comment" : "活动家详细页解析任务",
+  "domainTag" : "huodongjia-parser",
+  "crawlerBaseInfo" :
+  {
+    "baseUrls" : [
+    ],
+    "threadCount" : 1,
+    "refreshRedisWhenStart" : false,
+    "exitWhenComplete" : false
+  },
+
+  "crawlerTrigger" :
+  [
+    {
+      "type" : "simple_once",
+      "value" : true
+    }
+  ],
+
+  "site" :
+  {
+    "charset" : "UTF-8",
+    "timeOut" : 30000
+  },
+
+  "scheduler" : {
+    "hasDetailPage" : false
+  },
+
+  "pipelines" : [
+    "loggerPipeline"
+  ],
+
+  "downloaders" : [
+    {
+      "urlPattern" : ".*",
+      "downloader": "s3Downloader"
+    }
+  ],
+
+  "pageProcessor" : {
+    "preSubProcessor" : ["imgSubstitute", "linkRemove"],
+    "afterSubProcessor" : ["cityId","detailParser"],
+    "pageParserConfigs" : [
+      {
+        "targetUrlPattern" : ".*",
+        "pageType" : "html",
+        "fieldFromRequest" : [
+          "originUrl","crawlTime","thumbnail"
+        ],
+        "fieldParserConfigs" : [
+          {
+            "fieldName" : "title",
+            "xpathSelector" : "//h1[@class='media-heading']/a[1]/text()",
+            "converter" : "stringTrimConverter"
+          },
+          {
+            "fieldName": "meetingBeginTime",
+            "xpathSelector" : "//div[@class='media-body']/span[1]/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data};var regResult = /\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{1,2}:\\d{1,2}/.exec(data.split('至')[0].trim()); if (regResult == null) {return null}; return regResult[0]}",
+            "converter" : "dateTimeConverter",
+            "converterParam" : "yyyy-MM-dd HH:mm:ss"
+          },
+          {
+            "fieldName": "meetingEndTime",
+            "xpathSelector" : "//div[@class='media-body']/span[1]/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data};var regResult = /\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{1,2}:\\d{1,2}/.exec(data.split('至')[1].trim()); if (regResult == null) {return null}; return regResult[0]}",
+            "converter" : "dateTimeConverter",
+            "converterParam" : "yyyy-MM-dd HH:mm:ss"
+          },
+          {
+            "fieldName": "limitation",
+            "xpathSelector" : "//div[@class='media-body']/span[3]/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data}; var regResult = /\\d+/.exec(data.trim()); if (regResult == null) {return null;} return regResult[0];}"
+          },
+          {
+            "fieldName" : "source",
+            "defaultValue" : "活动家"
+          },
+          {
+            "fieldName" : "meetingTimeType",
+            "defaultValue" : "1"
+          },
+          {
+          	"fieldName" : "cityName",
+          	"xpathSelector" : "//div[@class='media-body']/span[2]/a[1]/text()",
+          	"converter" : "stringTrimConverter"
+          },
+          {
+            "fieldName" : "address",
+            "xpathSelector" : "//div[@class='media-body']/span[2]/allText()",
+            "script" : "function dataConverter(data) { if (null==data) {return data}; result=data.split(/[:：]/); addArr=result[1].trim().split(/\\s+/); if (addArr.length==1) {return null} if (addArr.length==2) {return addArr[1].trim()} if (addArr.length==3) {return addArr[1]+' '+ addArr[2]};}",
+            "converter" : "stringTrimConverter"
+          },
+          {
+            "fieldName" : "content",
+            "cssSelector" : ".event_content",
+            "cssSelectorAttrName" : "innerhtml",
+            "converter" : "htmlTagFilterConverter"
+          }
+        ]
+      }
+    ]
+
+
+  }
+
+}

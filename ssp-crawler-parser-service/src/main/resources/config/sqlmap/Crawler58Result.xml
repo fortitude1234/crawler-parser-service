@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Crawler58Result">
+
+	<typeAlias alias="crawler58Result"
+		type="com.dianping.ssp.crawler.parser.service.entity.Crawler58ResultEntity" />
+
+	<sql id="sql_select">
+		SELECT id,
+		`title` as title,
+        `url` as url,
+        `thumbnail` as thumbnail,
+        `source`,
+        `service_area` as serviceArea,
+        `category`,
+        `child_category` as childCategory,
+        `phone`,
+        `contact`,
+        `vip_year` as vipYear,
+        `read_count` as readCount,
+        `city_id` as cityId,
+        `original_time` as originalTime,
+        `crawl_time` as crawlTime,
+        `content_url` as contentUrl,
+        `status`,
+        `extra_message` extraMessage,
+        `domain_tag` as domainTag,
+        `similar_id` as similarId
+		FROM SB_Crawler_58_Result
+	</sql>
+    <insert id="insert" parameterClass="map">
+    	INSERT INTO SB_Crawler_58_Result
+    	(
+	    `title`,
+        `url`,
+        `thumbnail`,
+        `source`,
+        `service_area`,
+        `category`,
+        `child_category`,
+        `phone`,
+        `contact`,
+        `vip_year`,
+        `read_count`,
+        `city_id`,
+        `original_time`,
+        `crawl_time`,
+        `content_url`,
+        `status`,
+        `extra_message`,
+        `updatetime`,
+        `domain_tag`,
+        `similar_id`
+    	)
+    	VALUES
+    	(
+    	#entity.title#,
+        #entity.url#,
+        #entity.thumbnail#,
+        #entity.source#,
+        #entity.serviceArea#,
+        #entity.category#,
+        #entity.childCategory#,
+        #entity.phone#,
+        #entity.contact#,
+        #entity.vipYear#,
+        #entity.readCount#,
+        #entity.cityId#,
+        #entity.originalTime#,
+        #entity.crawlTime#,
+        #entity.contentUrl#,
+        #entity.status#,
+        #entity.extraMessage#,
+        NOW(),
+        #entity.domainTag#,
+        #entity.similarId#
+    	)
+        <selectKey resultClass="int" keyProperty="id">
+            SELECT @@IDENTITY AS id
+        </selectKey>
+    </insert>
+    <select id="findById" parameterClass="map" resultClass="crawler58Result">
+		<include refid="sql_select"/>
+		<![CDATA[
+			WHERE id = #id#
+			LIMIT 1
+		]]>
+	</select>
+    <update id="updateStatus" parameterClass="map">
+        UPDATE SB_Article_Original
+        SET `status` = #status#
+        WHERE id = #id#;
+    </update>
+</sqlMap>

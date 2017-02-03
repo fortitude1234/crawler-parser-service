@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<!-- The SqlMapClient configuration for avatar-based System -->
+	<bean id="ssp.article.sqlMapClient" class="com.dianping.avatar.dao.ibatis.spring.LimitSqlMapClientFactoryBean">
+		<property name="dataSource" ref="ssp.article.dataSource" />
+		<property name="configLocations">
+			<list>
+				<value>classpath:/config/sqlmap/ssp-crawler-sql-map.xml</value>
+			</list>
+		</property>
+		<property name="sqlConvert" ref="mysqlConverter" />
+	</bean>
+
+	
+	<!-- The DAO default implementation for avatar -->
+	<bean id="ssp.article.daoRealizeTarget" class="com.dianping.avatar.dao.ibatis.IBatisGenericDaoImpl" abstract="true">
+		<property name="sqlMapClient" ref="ssp.article.sqlMapClient" />
+	</bean>
+
+	<!--&lt;!&ndash; mopay读库 &ndash;&gt;-->
+	<!--<bean id="ssp.article.slave.sqlMapClient" class="com.dianping.avatar.dao.ibatis.spring.LimitSqlMapClientFactoryBean">-->
+		<!--<property name="dataSource" ref="ssp.article.dataSource.slave" />-->
+		<!--<property name="configLocations">-->
+			<!--<list>-->
+				<!--<value>classpath:/config/sqlmap/ssp-crawler-sql-map.xml</value>-->
+			<!--</list>-->
+		<!--</property>-->
+		<!--<property name="sqlConvert" ref="mysqlConverter" />-->
+	<!--</bean>-->
+
+	<!--&lt;!&ndash; mopay读库 &ndash;&gt;-->
+	<!--<bean id="ssp.article.slave.daoRealizeTarget" class="com.dianping.avatar.dao.ibatis.IBatisGenericDaoImpl" abstract="true">-->
+		<!--<property name="sqlMapClient" ref="ssp.article.slave.sqlMapClient" />-->
+	<!--</bean>-->
+</beans>

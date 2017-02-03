@@ -1,0 +1,88 @@
+{
+  "comment" : "微信公众号详细页解析任务",
+  "domainTag" : "wechat-parser",
+  "crawlerBaseInfo" :
+  {
+    "baseUrls" : [
+    ],
+    "threadCount" : 5,
+    "refreshRedisWhenStart" : false,
+    "exitWhenComplete" : false
+  },
+
+  "crawlerTrigger" :
+  [
+    {
+      "type" : "simple_once",
+      "value" : true
+    }
+  ],
+
+  "site" :
+  {
+    "charset" : "UTF-8",
+    "timeOut" : 30000
+  },
+
+  "scheduler" : {
+    "hasDetailPage" : false
+  },
+
+  "pipelines" : [
+    "loggerPipeline"
+  ],
+
+  "downloaders" : [
+    {
+      "urlPattern" : ".*",
+      "downloader": "s3Downloader"
+    }
+  ],
+
+  "pageProcessor" : {
+    "preSubProcessor" : ["wechatImgSubstitute", "wechatIframeSubstitute", "wechatReadCount"],
+    "afterSubProcessor" : ["detailParser"],
+    "pageParserConfigs" : [
+      {
+        "targetUrlPattern" : ".*",
+        "pageType" : "html",
+        "fieldFromRequest" : [
+          "originUrl","crawlTime","thumbnail","readCount","likeCount","isVideo"
+        ],
+        "fieldParserConfigs" : [
+          {
+            "fieldName" : "title",
+            "xpathSelector" : "//h2[@id='activity-name']/text()",
+            "converter" : "stringTrimConverter"
+          },
+          {
+            "fieldName": "originalTime",
+            "xpathSelector": "//em[@id='post-date']/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data};return data.replace(/年/g,'-').replace(/月/g,'-').replace(/日/g,'');}",
+            "converter" : "dateConverter"
+          },
+          {
+            "fieldName" : "source",
+            "xpathSelector" : "//a[@id='post-user']/text()"
+          },
+          {
+            "fieldName" : "author",
+            "xpathSelector" : "//div[@class='rich_media_meta_list']/em[2]/text()"
+          },
+          {
+            "fieldName" : "content",
+            "cssSelector" : "#js_content",
+            "cssSelectorAttrName" : "innerhtml",
+            "converterList" : ["htmlCleanConverter","removeTailConverter"],
+            "converterParam": {
+              "terminalKeywords": "[\\s|\\u00A0]*·[\\s|\\u00A0]*END[\\s|\\u00A0]*·"
+            }
+          }
+        ]
+      }
+    ]
+
+
+  }
+
+}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+
+    <bean id="ssp.article.dataSource" class="com.dianping.zebra.group.jdbc.GroupDataSource" init-method="init">
+        <property name="jdbcRef" value="ssparticle" />
+        <property name="minPoolSize" value="${mopay-service.mopay.master.c3p0.minSize}" />
+        <property name="maxPoolSize" value="${hui-business-service.mopay.master.c3p0.maxSize}" />
+        <property name="initialPoolSize" value="${mopay-service.mopay.master.c3p0.initialSize}" />
+        <property name="maxIdleTime" value="1800" />
+        <property name="idleConnectionTestPeriod" value="60" />
+        <property name="acquireRetryAttempts" value="3" />
+        <property name="acquireRetryDelay" value="300" />
+        <property name="maxStatements" value="0"/>
+        <property name="maxStatementsPerConnection" value="100"/>
+        <property name="numHelperThreads" value="6"/>
+        <property name="maxAdministrativeTaskTime" value="5"/>
+        <property name="preferredTestQuery" value="SELECT 1"/>
+        <property name="checkoutTimeout" value="1000" />
+        <property name="routerType" value="fail-over" />
+    </bean>
+
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource">
+            <ref local="ssp.article.dataSource" />
+        </property>
+    </bean>
+    
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!-- mopay读库，优先mopay读库从库 -->
+    <!--<bean id="ssp.article.dataSource.slave" class="com.dianping.zebra.group.jdbc.GroupDataSource" init-method="init">-->
+        <!--<property name="jdbcRef" value="mopay.1" />-->
+        <!--<property name="minPoolSize" value="${mopay-service.mopay.master.c3p0.minSize}" />-->
+        <!--<property name="maxPoolSize" value="${hui-business-service.mopay.slave.c3p0.maxSize}" />-->
+        <!--<property name="initialPoolSize" value="${mopay-service.mopay.master.c3p0.initialSize}" />-->
+        <!--<property name="maxIdleTime" value="1800" />-->
+        <!--<property name="idleConnectionTestPeriod" value="60" />-->
+        <!--<property name="acquireRetryAttempts" value="3" />-->
+        <!--<property name="acquireRetryDelay" value="300" />-->
+        <!--<property name="maxStatements" value="0"/>-->
+        <!--<property name="maxStatementsPerConnection" value="100"/>-->
+        <!--<property name="numHelperThreads" value="6"/>-->
+        <!--<property name="maxAdministrativeTaskTime" value="5"/>-->
+        <!--<property name="preferredTestQuery" value="SELECT 1"/>-->
+        <!--<property name="checkoutTimeout" value="1000" />-->
+    <!--</bean>-->
+</beans>

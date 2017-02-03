@@ -1,0 +1,90 @@
+{
+  "comment" : "餐饮界详细页解析任务",
+  "domainTag" : "canyinj-parser",
+  "crawlerBaseInfo" :
+  {
+    "baseUrls" : [
+    ],
+    "threadCount" : 2,
+    "refreshRedisWhenStart" : false,
+    "exitWhenComplete" : false
+  },
+
+  "crawlerTrigger" :
+  [
+    {
+      "type" : "simple_once",
+      "value" : true
+    }
+  ],
+
+  "site" :
+  {
+    "charset" : "UTF-8",
+    "timeOut" : 30000
+  },
+
+  "scheduler" : {
+    "hasDetailPage" : false
+  },
+
+  "pipelines" : [
+    "loggerPipeline"
+  ],
+
+  "downloaders" : [
+    {
+      "urlPattern" : ".*",
+      "downloader": "s3Downloader"
+    }
+  ],
+
+  "pageProcessor" : {
+    "preSubProcessor" : ["imgSubstitute", "linkRemove"],
+    "afterSubProcessor" : ["detailParser"],
+    "pageParserConfigs" : [
+      {
+        "targetUrlPattern" : ".*",
+        "pageType" : "html",
+        "fieldFromRequest" : [
+          "originUrl","crawlTime","thumbnail"
+        ],
+        "fieldParserConfigs" : [
+          {
+            "fieldName" : "title",
+            "xpathSelector" : "//div[@class='hl_c_title']/h2/text()"
+          },
+          {
+            "fieldName": "originalTime",
+            "xpathSelector": "//div[@class='hl_c_twid']/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data};return data.trim().split('/')[2].trim();}",
+            "converter" : "dateConverter"
+          },
+          {
+            "fieldName" : "source",
+            "xpathSelector" : "//a[@class='source']/text()",
+            "defaultValue" : "餐饮界"
+          },
+          {
+            "fieldName" : "author",
+            "xpathSelector" : "//div[@class='hl_c_twid']/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data};return data.trim().split('/')[1].trim();}"
+          },
+          {
+            "fieldName" : "content",
+            "cssSelector" : ".hl_body",
+            "cssSelectorAttrName" : "innerhtml",
+            "converter" : "contentConverter",
+            "converterParam" : {
+              "classFilterPattern" : "(hl_c_copy)",
+              "textRemover" : "，由餐饮界www.canyinj.com整编报道，转载请注明来源！"
+            }
+          }
+        ]
+      }
+    ]
+
+
+  }
+
+}

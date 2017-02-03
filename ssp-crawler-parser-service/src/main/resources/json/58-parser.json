@@ -1,0 +1,121 @@
+{
+  "comment" : "58详细页解析任务",
+  "domainTag" : "58-parser",
+  "crawlerBaseInfo" :
+  {
+    "baseUrls" : [
+    ],
+    "threadCount" : 2,
+    "refreshRedisWhenStart" : false,
+    "exitWhenComplete" : false
+  },
+
+  "crawlerTrigger" :
+  [
+    {
+      "type" : "simple_once",
+      "value" : true
+    }
+  ],
+
+  "site" :
+  {
+    "charset" : "UTF-8",
+    "timeOut" : 30000
+  },
+
+  "scheduler" : {
+    "hasDetailPage" : false
+  },
+
+  "pipelines" : [
+    "loggerPipeline"
+  ],
+
+  "downloaders" : [
+    {
+      "urlPattern" : ".*",
+      "downloader": "s3Downloader"
+    }
+  ],
+
+  "pageProcessor" : {
+    "preSubProcessor" : ["imgSubstitute"],
+    "afterSubProcessor" : ["58ParserSubProcessor"],
+    "pageParserConfigs" : [
+      {
+        "targetUrlPattern" : ".*",
+        "pageType" : "html",
+        "fieldFromRequest" : [
+          "originUrl","crawlTime","thumbnail"
+        ],
+        "fieldParserConfigs" : [
+          {
+            "fieldName" : "title",
+            "xpathSelector" : "//div[@class='mainTitle']/h1/text()"
+          },
+          {
+          	"fieldName" : "readCount",
+          	"xpathSelector" : "//em[@id='totalcount']/text()",
+          	"converter" : "stringTrimConverter"
+          },
+          {
+            "fieldName": "originalTime",
+            "xpathSelector": "//li[@title='发布日期']/text()",
+            "converter" : "dateConverter",
+            "converterParam" : "yyyy-MM-dd"
+          },
+          {
+            "fieldName" : "source",
+            "defaultValue" : "58同城"
+          },
+          {
+          	"fieldName" : "serviceArea",
+          	"xpathSelector" : "//div[@class='cona quyuline']/a/text()",
+          	"isList" : true,
+          	"defaultValue" : ""
+          },
+          {
+          	"fieldName" : "category",
+          	"xpathSelector" : "//a[@class='hqgs']/text()",
+          	"defaultValue" : ""
+          },
+          {
+          	"fieldName" : "childCategory",
+          	"xpathSelector" : "//ul[@class='suUl']/allText()",
+          	"defaultValue" : "",
+          	"converter" : "regexConverter",
+          	"converterParam" : "(?<=小类).*(?=联系人)"
+          },
+          {
+          	"fieldName" : "vipYear",
+          	"xpathSelector" : "//span[@id='vip_icon']/text()",
+          	"script" : "function dataConverter(data){ if(null==data){return '0'};var regResult = /(\\d+)/.exec(data); if (regResult == null ) {return '0'}; return regResult[0].trim();}",
+          	"defaultValue" : "0"
+          },
+          {
+          	"fieldName" : "phone",
+          	"xpathSelector" : "//span[@class='l_phone']/text()",
+          	"defaultValue" : ""
+          },
+          {
+          	"fieldName" : "contact",
+          	"xpathSelector" : "//div[@class='su_con mg_l_7']/a/text()",
+          	"defaultValue" : ""
+          },
+          {
+            "fieldName" : "content",
+            "xpathSelector" : "//div[@class='description']/outerHtml()",
+            "converterList" : ["htmlCleanConverter","contentConverter"],
+            "converterParam": {
+              "contentFilterPattern": "(.*?请说是在58同城看到的.*?)"
+            }
+          }
+        ]
+      }
+    ]
+
+
+  }
+
+}

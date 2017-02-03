@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+	
+	<!-- The introduce interceptor for all Dao -->
+	<bean id="daoAutoRealizer" class="com.dianping.avatar.dao.DAOAutoRealizer" />
+
+	<!-- MySQL sql converter -->
+	<bean id="mysqlConverter" class="com.dianping.avatar.dao.ibatis.MySqlConverter" />
+
+
+	<!-- The advisor for inject interceptor -->
+	<bean id="daoAutoRealizerAdvisor"
+		class="org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor">
+		<property name="advice" ref="daoAutoRealizer" />
+		<property name="expression"
+			value="execution(* com.dianping..dao..*.*(..)) and !execution(* com.dianping.avatar..dao..*.*(..))" />
+	</bean>
+
+	<bean id="parentDao" class="org.springframework.aop.framework.ProxyFactoryBean"
+		abstract="true">
+		<property name="interceptorNames">
+			<list>
+				<value>daoAutoRealizerAdvisor</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="articleOriginDao" parent="parentDao">
+		<property name="proxyInterfaces" value="com.dianping.ssp.crawler.parser.service.dao.ArticleOriginDao" />
+		<property name="target">
+			<bean parent="ssp.article.daoRealizeTarget">
+				<constructor-arg value="ArticleOrigin" />
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="crawler58ResultDao" parent="parentDao">
+		<property name="proxyInterfaces" value="com.dianping.ssp.crawler.parser.service.dao.Crawler58ResultDao" />
+		<property name="target">
+			<bean parent="ssp.article.daoRealizeTarget">
+				<constructor-arg value="Crawler58Result" />
+			</bean>
+		</property>
+	</bean>
+</beans>

@@ -1,0 +1,98 @@
+{
+  "comment" : "亿欧网详细页解析任务",
+  "domainTag" : "yiou-parser",
+  "crawlerBaseInfo" :
+  {
+    "baseUrls" : [
+    ],
+    "threadCount" : 2,
+    "refreshRedisWhenStart" : false,
+    "exitWhenComplete" : false
+  },
+
+  "crawlerTrigger" :
+  [
+    {
+      "type" : "simple_once",
+      "value" : true
+    }
+  ],
+
+  "site" :
+  {
+    "charset" : "UTF-8",
+    "timeOut" : 30000
+  },
+
+  "scheduler" : {
+    "hasDetailPage" : false
+  },
+
+  "pipelines" : [
+    "loggerPipeline"
+  ],
+
+  "downloaders" : [
+    {
+      "urlPattern" : ".*",
+      "downloader": "s3Downloader"
+    }
+  ],
+
+  "pageProcessor" : {
+    "preSubProcessor" : ["imgSubstitute"],
+    "afterSubProcessor" : ["detailParser"],
+    "pageParserConfigs" : [
+      {
+        "targetUrlPattern" : ".*",
+        "pageType" : "html",
+        "fieldFromRequest" : [
+          "originUrl","crawlTime","thumbnail"
+        ],
+        "fieldParserConfigs" : [
+          {
+            "fieldName" : "title",
+            "xpathSelector" : "//div[@id='post_title']/text()"
+          },
+          {
+            "fieldName": "originalTime",
+            "xpathSelector": "//div[@id='post_date']/text()",
+            "converter" : "dateConverter"
+          },
+          {
+            "fieldName" : "source",
+            "xpathSelector" : "//div[@id='post_source']/text()",
+            "defaultValue" : "亿欧网"
+          },
+          {
+            "fieldName" : "author",
+            "xpathSelector" : "//div[@id='post_author']/text()"
+          },
+          {
+            "fieldName" : "content",
+            "cssSelector" : "#post_content",
+            "cssSelectorAttrName" : "innerhtml",
+            "converterList" : ["removeTailConverter","contentConverter"],
+            "converterParam" : {
+              "terminalClass" : "PlayTourSubmit",
+              "deleteIds":"post_info,post_brief,post_title"
+
+            }
+          },
+          {
+            "fieldName" : "tag",
+            "xpathSelector" :"//div[@id='post_industry']/a/text()" ,
+            "isList" : "true"
+          },
+          {
+            "fieldName" : "summary",
+            "xpathSelector" :"//div[@id='post_brief']/text()"
+          }
+        ]
+      }
+    ]
+
+
+  }
+
+}

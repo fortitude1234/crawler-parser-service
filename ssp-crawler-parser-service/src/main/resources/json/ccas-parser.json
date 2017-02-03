@@ -1,0 +1,74 @@
+{
+  "comment" : "中国烹饪协会详细页解析任务",
+  "domainTag" : "ccas-parser",
+  "crawlerBaseInfo" :
+  {
+    "baseUrls" : [
+    ],
+    "threadCount" : 1,
+    "refreshRedisWhenStart" : false,
+    "exitWhenComplete" : false
+  },
+
+  "crawlerTrigger" :
+  [
+    {
+      "type" : "simple_once",
+      "value" : true
+    }
+  ],
+
+  "site" :
+  {
+    "charset" : "UTF-8",
+    "timeOut" : 30000
+  },
+
+  "scheduler" : {
+    "hasDetailPage" : false
+  },
+
+  "pipelines" : [
+    "loggerPipeline"
+  ],
+
+  "downloaders" : [
+    {
+      "urlPattern" : ".*",
+      "downloader": "s3Downloader"
+    }
+  ],
+
+  "pageProcessor" : {
+    "preSubProcessor" : ["imgSubstitute", "linkRemove"],
+    "afterSubProcessor" : ["detailParser"],
+    "pageParserConfigs" : [
+      {
+        "targetUrlPattern" : ".*",
+        "pageType" : "html",
+        "fieldFromRequest" : [
+          "originUrl","crawlTime","thumbnail"
+        ],
+        "fieldParserConfigs" : [
+          {
+            "fieldName" : "title",
+            "xpathSelector" : "//td[@class='lan16']/allText()",
+            "converter" : "stringTrimConverter"
+          },
+          {
+            "fieldName" : "source",
+            "defaultValue" : "中国烹饪协会"
+          },
+          {
+            "fieldName" : "content",
+            "xpathSelector" : "//div[@id='aa']/outerHtml()",
+            "converter" : "htmlTagFilterConverter"
+          }
+        ]
+      }
+    ]
+
+
+  }
+
+}

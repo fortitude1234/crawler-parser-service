@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="ArticleOrigin">
+
+	<typeAlias alias="articleOrigin"
+		type="com.dianping.ssp.crawler.parser.service.entity.ArticleOriginEntity" />
+
+	<sql id="sql_select">
+		SELECT id,
+		`title` as title,
+        `url` as url,
+        `thumbnail` as thumbnail,
+        `source`,
+        `original_time` as originalTime,
+        `crawl_time` as crawlTime,
+        `author`,
+        `content_url` as contentUrl,
+        `status`,
+        `extra_message` extraMessage,
+        `updatetime`,
+        `domain_tag` as domainTag,
+        `similar_id` as similarId
+		FROM SB_Article_Original
+	</sql>
+    <insert id="addNewArticle" parameterClass="map">
+    	INSERT INTO SB_Article_Original
+    	(
+	    `title`,
+        `url`,
+        `thumbnail`,
+        `source`,
+        `original_time`,
+        `crawl_time`,
+        `author`,
+        `content_url`,
+        `status`,
+        `extra_message`,
+        `updatetime`,
+        `domain_tag`,
+        `similar_id`
+    	)
+    	VALUES
+    	(
+    		#entity.title#,
+        #entity.url#,
+        #entity.thumbnail#,
+        #entity.source#,
+        #entity.originalTime#,
+        #entity.crawlTime#,
+        #entity.author#,
+        #entity.contentUrl#,
+        #entity.status#,
+        #entity.extraMessage#,
+        NOW(),
+        #entity.domainTag#,
+        #entity.similarId#
+    	)
+        <selectKey resultClass="int" keyProperty="id">
+            SELECT @@IDENTITY AS id
+        </selectKey>
+    </insert>
+    <select id="loadById" parameterClass="map" resultClass="articleOrigin">
+		<include refid="sql_select"/>
+		<![CDATA[
+			WHERE id = #id#
+			LIMIT 1
+		]]>
+	</select>
+    <update id="updateStatus" parameterClass="map">
+        UPDATE SB_Article_Original
+        SET `status` = #status#
+        WHERE id = #id#;
+    </update>
+</sqlMap>

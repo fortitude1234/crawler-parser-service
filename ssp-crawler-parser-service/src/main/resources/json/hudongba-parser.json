@@ -1,0 +1,97 @@
+{
+  "comment" : "互动吧详细页解析任务",
+  "domainTag" : "hudongba-parser",
+  "crawlerBaseInfo" :
+  {
+    "baseUrls" : [
+    ],
+    "threadCount" : 1,
+    "refreshRedisWhenStart" : false,
+    "exitWhenComplete" : false
+  },
+
+  "crawlerTrigger" :
+  [
+    {
+      "type" : "simple_once",
+      "value" : true
+    }
+  ],
+
+  "site" :
+  {
+    "charset" : "UTF-8",
+    "timeOut" : 30000
+  },
+
+  "scheduler" : {
+    "hasDetailPage" : false
+  },
+
+  "pipelines" : [
+    "loggerPipeline"
+  ],
+
+  "downloaders" : [
+    {
+      "urlPattern" : ".*",
+      "downloader": "s3Downloader"
+    }
+  ],
+
+  "pageProcessor" : {
+    "preSubProcessor" : ["imgSubstitute", "linkRemove"],
+    "afterSubProcessor" : ["detailParser"],
+    "pageParserConfigs" : [
+      {
+        "targetUrlPattern" : ".*",
+        "pageType" : "html",
+        "fieldFromRequest" : [
+          "originUrl","crawlTime"
+        ],
+        "fieldParserConfigs" : [
+          {
+            "fieldName" : "title",
+            "xpathSelector" : "//h2[@id='dt_title']/text()",
+            "converter" : "stringTrimConverter"
+          },
+          {
+            "fieldName": "meetingBeginTime",
+            "xpathSelector" : "//div[@class='detail_Time_t']/p[1]/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data}; return data.split('~')[0].trim();}",
+            "converter" : "hdbDateConverter"
+          },
+          {
+            "fieldName": "meetingEndTime",
+            "xpathSelector" : "//div[@class='detail_Time_t']/p[1]/text()",
+            "script" : "function dataConverter(data){ if(null==data){return data}; return data.split('~')[1].trim();}",
+            "converter" : "hdbDateConverter"
+          },
+          {
+            "fieldName": "limitation",
+            "xpathSelector" : "//div[@id='detail_Joinnum']/allText()",
+            "script" : "function dataConverter(data){ if(null==data){return data}; var regResult = /\\d+/.exec(data.trim()); if (regResult == null) {return null;} return regResult[0];}"
+          },
+          {
+            "fieldName" : "source",
+            "defaultValue" : "互动吧"
+          },
+          {
+            "fieldName" : "address",
+            "xpathSelector" : "//div[@class='detail_Attr']/allText()",
+            "converter" : "stringTrimConverter"
+          },
+          {
+            "fieldName" : "content",
+            "cssSelector" : "#dt_content",
+            "cssSelectorAttrName" : "innerhtml",
+            "converter" : "htmlTagFilterConverter"
+          }
+        ]
+      }
+    ]
+
+
+  }
+
+}
